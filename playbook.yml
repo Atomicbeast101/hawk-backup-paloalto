@@ -15,9 +15,6 @@
     sftp_password: "{{ lookup('ansible.builtin.env', 'SFTP_PASSWORD') }}"
     sftp_path: "{{ lookup('ansible.builtin.env', 'SFTP_PATH') }}"
     # Pushover
-    pushover_token: "{{ lookup('ansible.builtin.env', 'PUSHOVER_TOKEN') }}"
-    pushover_user: "{{ lookup('ansible.builtin.env', 'PUSHOVER_USER') }}"
-    # Pushover
     pushover_user: "{{ lookup('ansible.builtin.env', 'PUSHOVER_USER_KEY') }}"
     pushover_token: "{{ lookup('ansible.builtin.env', 'PUSHOVER_APP_TOKEN') }}"
   tasks:
