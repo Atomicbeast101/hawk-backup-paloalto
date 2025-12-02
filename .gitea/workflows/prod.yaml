@@ -10,8 +10,11 @@ env:
 
 jobs:
   release:
-    name: Release
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        architecture: [x86_64, arm64]
+    name: Release (${{ matrix.architecture }})
+    runs-on: ${{ matrix.architecture == 'x86_64' && 'ubuntu-latest' || matrix.architecture == 'arm64' && 'ubuntu-latest-arm' }}
     container:
       image: catthehacker/ubuntu:act-latest
     steps:
