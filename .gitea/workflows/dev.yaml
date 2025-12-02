@@ -82,7 +82,6 @@ jobs:
 
   report:
     name: Report
-    runs-on: ubuntu-latest
     continue-on-error: true
     needs: 
       - release
@@ -94,22 +93,12 @@ jobs:
           echo REPO_NAME=$(echo ${GITHUB_REPOSITORY} | awk -F"/" '{print $2}') >> $GITHUB_OUTPUT
           echo DATE_RELEASE=$(echo "`date +'%Y.%m.%d'`") >> $GITHUB_OUTPUT
 
-      - name: Report of Success
-        if: needs.release.result == 'success' && needs.deploy.result == 'success'
-        uses: umahmood/pushover-actions@main
-        env:
-          PUSHOVER_USER: ${{ secrets.PUSHOVER_USER }}
-          PUSHOVER_TOKEN: ${{ secrets.PUSHOVER_TOKEN }}
+      - name: Notify User
+        uses: https://${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/gitea-workflows@dev
         with:
-          title: Gitea DevOps
-          message: ✅ Built/Pushed & Tested ${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}${{ env.IMAGE_TAG_ENDING }} app!
-
-      - name: Report of Failure
-        if: needs.release.result != 'success' && needs.deploy.result != 'success'
-        uses: umahmood/pushover-actions@main
-        env:
-          PUSHOVER_USER: ${{ secrets.PUSHOVER_USER }}
-          PUSHOVER_TOKEN: ${{ secrets.PUSHOVER_TOKEN }}
-        with:
-          title: Gitea DevOps
-          message: ❌ Unable to build/push & test ${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}${{ env.IMAGE_TAG_ENDING }} app.
+          success: needs.release.result == 'success' # && needs.test.result == 'success'
+          repo_name: ${{ steps.meta.outputs.REPO_NAME }}
+          image_tag_ending: ${{ env.IMAGE_TAG_ENDING }}
+          date_release: ${{ steps.meta.outputs.DATE_RELEASE }}
+          pushover_user: ${{ secrets.PUSHOVER_USER }}
+          pushover_token: ${{ secrets.PUSHOVER_TOKEN }}
