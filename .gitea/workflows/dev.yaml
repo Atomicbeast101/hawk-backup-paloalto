@@ -33,12 +33,12 @@ jobs:
         SFTP_PATH: /backup/network_configs__TEST
         PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER }}
         PUSHOVER_APP_TOKEN: ${{ secrets.PUSHOVER_TOKEN }}
-      steps:
-        - name: Install Dependencies
-          run: bash /app/setup.sh
+    steps:
+      - name: Install Dependencies
+        run: bash /app/setup.sh
 
-        - name: Perform Test Backup
-          run: bash /app/run.sh
+      - name: Perform Test Backup
+        run: bash /app/run.sh
 
   report:
     name: Report
