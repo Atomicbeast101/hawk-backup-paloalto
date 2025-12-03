@@ -50,10 +50,11 @@ jobs:
         with:
           connection_url: smtp://${{ vars.SMTP_USERNAME }}:${{ secrets.SMTP_PASSWORD }}@${{ vars.SMTP_SERVER }}:${{ vars.SMTP_PORT }}
           to: ${{ vars.SMTP_USERNAME }}
-          from: ${{ vars.SMTP_USERNAME }}
+          from: Gitea DevOps
           subject: Gitea DevOps - Test Results for ${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev
           body: Please see attached logs file.
           attachments: logs.txt
+          ignore_cert: true
 
       - name: Remove container
         continue-on-error: true
