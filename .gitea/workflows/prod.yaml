@@ -60,7 +60,7 @@ jobs:
           echo DATE_RELEASE=$(echo "`date +'%Y.%m.%d'`") >> $GITHUB_OUTPUT
 
       - name: Notify User
-        uses: https://${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/gitea-workflows@dev
+        uses: https://${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/gitea-workflows-notification@main
         with:
           success: needs.release.result == 'success'
           repo_name: ${{ steps.meta.outputs.REPO_NAME }}
