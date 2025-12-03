@@ -34,6 +34,9 @@ jobs:
         PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER }}
         PUSHOVER_APP_TOKEN: ${{ secrets.PUSHOVER_TOKEN }}
     steps:
+      - name: Test
+        run: pwd; ls /; ls /app
+
       - name: Install Dependencies
         run: bash /app/setup.sh
 
