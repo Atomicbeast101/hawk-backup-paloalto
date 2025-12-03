@@ -27,39 +27,41 @@ jobs:
       - name: Get Meta
         id: meta
         run: |
+          echo "${{ github.repository }}"
+
           echo REPO_NAME=$(echo ${GITHUB_REPOSITORY} | awk -F"/" '{print $2}') >> $GITHUB_OUTPUT
           echo DATE_RELEASE=$(echo "`date +'%Y.%m.%d'`") >> $GITHUB_OUTPUT
 
-      - name: Run container and capture logs
-        env:
-          FIREWALL_HOST: ${{ vars.FIREWALL_HOST }}
-          FIREWALL_USERNAME: ${{ vars.FIREWALL_USERNAME }}
-          FIREWALL_PASSWORD: ${{ secrets.FIREWALL_PASSWORD }}
-          SFTP_HOST: ${{ vars.SFTP_HOST }}
-          SFTP_USERNAME: ${{ vars.SFTP_USERNAME }}
-          SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
-          SFTP_PATH: /backup/network_configs__TEST
-          PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER }}
-          PUSHOVER_APP_TOKEN: ${{ secrets.PUSHOVER_TOKEN }}
-        run: |
-          docker run --entrypoint /bin/bash ${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev -c '/app/setup.sh; /app/run.sh'
-          docker wait ${{ steps.meta.outputs.REPO_NAME }}-auto-test
-          docker logs ${{ steps.meta.outputs.REPO_NAME }}-auto-test > logs.txt
+      # - name: Run container and capture logs
+      #   env:
+      #     FIREWALL_HOST: ${{ vars.FIREWALL_HOST }}
+      #     FIREWALL_USERNAME: ${{ vars.FIREWALL_USERNAME }}
+      #     FIREWALL_PASSWORD: ${{ secrets.FIREWALL_PASSWORD }}
+      #     SFTP_HOST: ${{ vars.SFTP_HOST }}
+      #     SFTP_USERNAME: ${{ vars.SFTP_USERNAME }}
+      #     SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+      #     SFTP_PATH: /backup/network_configs__TEST
+      #     PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER }}
+      #     PUSHOVER_APP_TOKEN: ${{ secrets.PUSHOVER_TOKEN }}
+      #   run: |
+      #     docker run --entrypoint /bin/bash ${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev -c '/app/setup.sh; /app/run.sh'
+      #     docker wait ${{ steps.meta.outputs.REPO_NAME }}-auto-test
+      #     docker logs ${{ steps.meta.outputs.REPO_NAME }}-auto-test > logs.txt
 
-      - name: Send Logs via Email
-        uses: dawidd6/action-send-mail@v6
-        with:
-          connection_url: smtp://${{ vars.SMTP_USERNAME }}:${{ secrets.SMTP_PASSWORD }}@${{ vars.SMTP_SERVER }}:${{ vars.SMTP_PORT }}
-          to: ${{ vars.SMTP_RECEIVER }}
-          from: ${{ vars.SMTP_USERNAME }}
-          subject: Gitea DevOps - Test Results for ${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev
-          body: Please see attached logs file.
-          attachments: logs.txt
+      # - name: Send Logs via Email
+      #   uses: dawidd6/action-send-mail@v6
+      #   with:
+      #     connection_url: smtp://${{ vars.SMTP_USERNAME }}:${{ secrets.SMTP_PASSWORD }}@${{ vars.SMTP_SERVER }}:${{ vars.SMTP_PORT }}
+      #     to: ${{ vars.SMTP_RECEIVER }}
+      #     from: ${{ vars.SMTP_USERNAME }}
+      #     subject: Gitea DevOps - Test Results for ${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev
+      #     body: Please see attached logs file.
+      #     attachments: logs.txt
 
-      - name: Remove container
-        continue-on-error: true
-        run: |
-          docker rm ${{ steps.meta.outputs.REPO_NAME }}-auto-test
+      # - name: Remove container
+      #   continue-on-error: true
+      #   run: |
+      #     docker rm ${{ steps.meta.outputs.REPO_NAME }}-auto-test
 
   report:
     name: Report
