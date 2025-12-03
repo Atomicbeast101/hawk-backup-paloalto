@@ -28,7 +28,6 @@ jobs:
         id: meta
         run: |
           echo REPO_NAME=$(echo "${GITHUB_REPOSITORY##*/}") >> $GITHUB_OUTPUT
-          echo "${GITHUB_REPOSITORY##*/}"
           echo DATE_RELEASE=$(echo "`date +'%Y.%m.%d'`") >> $GITHUB_OUTPUT
 
       - name: Run container and capture logs
@@ -43,7 +42,7 @@ jobs:
           PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER }}
           PUSHOVER_APP_TOKEN: ${{ secrets.PUSHOVER_TOKEN }}
         run: |
-          docker run --name ${{ steps.meta.outputs.REPO_NAME }}-auto-test --entrypoint /bin/bash ${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/${{ env.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev -c '/app/setup.sh'
+          docker run --name ${{ steps.meta.outputs.REPO_NAME }}-auto-test --entrypoint /bin/bash ${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev -c '/app/setup.sh'
           docker wait ${{ steps.meta.outputs.REPO_NAME }}-auto-test
           docker logs ${{ steps.meta.outputs.REPO_NAME }}-auto-test > logs.txt
 
