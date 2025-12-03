@@ -14,7 +14,7 @@ WORKDIR /app
 COPY requirements.txt .
 COPY requirements.yml .
 COPY playbook.yml .
-COPY docker-entrypoint.sh .
+COPY *.sh .
 RUN chmod +x /app/*.sh
 VOLUME /var/log/cron
 CMD ["./docker-entrypoint.sh"]
