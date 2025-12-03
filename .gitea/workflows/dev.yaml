@@ -48,7 +48,11 @@ jobs:
       - name: Send Logs via Email
         uses: dawidd6/action-send-mail@v6
         with:
-          connection_url: smtp://${{ vars.SMTP_USERNAME }}:${{ secrets.SMTP_PASSWORD }}@${{ vars.SMTP_SERVER }}:${{ vars.SMTP_PORT }}
+          server_address: ${{ vars.SMTP_SERVER }}
+          server_port: ${{ vars.SMTP_PORT }}
+          username: ${{ vars.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          secure: true
           to: ${{ vars.SMTP_USERNAME }}
           from: Gitea DevOps
           subject: Gitea DevOps - Test Results for ${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev
