@@ -49,7 +49,7 @@ jobs:
         uses: dawidd6/action-send-mail@v6
         with:
           connection_url: smtp://${{ vars.SMTP_USERNAME }}:${{ secrets.SMTP_PASSWORD }}@${{ vars.SMTP_SERVER }}:${{ vars.SMTP_PORT }}
-          to: ${{ vars.SMTP_RECEIVER }}
+          to: ${{ vars.SMTP_USERNAME }}
           from: ${{ vars.SMTP_USERNAME }}
           subject: Gitea DevOps - Test Results for ${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev
           body: Please see attached logs file.
