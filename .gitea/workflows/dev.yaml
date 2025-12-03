@@ -42,7 +42,7 @@ jobs:
           PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER }}
           PUSHOVER_APP_TOKEN: ${{ secrets.PUSHOVER_TOKEN }}
         run: |
-          docker run --entrypoint /bin/bash ${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev -c '/app/setup.sh; /app/run.sh'
+          docker run --force --entrypoint /bin/bash ${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev -c '/app/setup.sh; /app/run.sh'
           docker wait ${{ steps.meta.outputs.REPO_NAME }}-auto-test
           docker logs ${{ steps.meta.outputs.REPO_NAME }}-auto-test > logs.txt
 
