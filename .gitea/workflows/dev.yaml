@@ -4,48 +4,17 @@ on:
     branches:
       - dev
 
-env:
-  IMAGE_BASE: ${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}
-  IMAGE_TAG_ENDING: -dev
-
 jobs:
   release:
-    strategy:
-      matrix:
-        architecture: [x86_64, arm64]
-    name: Release (${{ matrix.architecture }})
-    runs-on: ${{ matrix.architecture == 'x86_64' && 'ubuntu-latest' || matrix.architecture == 'arm64' && 'ubuntu-latest-arm' }}
-    container:
-      image: catthehacker/ubuntu:act-latest
+    name: Release
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v4
-
-      - name: Set up Docker BuildX
-        uses: docker/setup-buildx-action@v3
-
-      - name: Get Meta
-        id: meta
-        run: |
-          echo REPO_NAME=$(echo ${GITHUB_REPOSITORY} | awk -F"/" '{print $2}') >> $GITHUB_OUTPUT
-          echo DATE_RELEASE=$(echo "`date +'%Y.%m.%d'`") >> $GITHUB_OUTPUT
-
-      - name: Login to Local ACR
-        uses: docker/login-action@v3
+      - name: Build Image(s)
+        uses: https://${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/gitea-workflows-builder@main
         with:
-          registry: ${{ vars.LOCAL_ACR_URL }}
-          username: ${{ vars.LOCAL_ACR_USERNAME }}
-          password: ${{ secrets.LOCAL_ACR_PASSWORD }}
-
-      - name: Build & Push to Local ACR
-        uses: docker/build-push-action@v6
-        with:
-          platforms: |
-            linux/amd64
-          push: true
-          tags: |
-            ${{ env.IMAGE_BASE }}/${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}${{ env.IMAGE_TAG_ENDING }}
-            ${{ env.IMAGE_BASE }}/${{ steps.meta.outputs.REPO_NAME }}:latest${{ env.IMAGE_TAG_ENDING }}
+          registry_url: ${{ vars.LOCAL_ACR_URL }}
+          registry_username: ${{ vars.LOCAL_ACR_USERNAME }}
+          registry_password: ${{ secrets.LOCAL_ACR_PASSWORD }}
+          development: true
 
   # test:
   #   name: Test
@@ -87,18 +56,10 @@ jobs:
       - release
       # - test
     steps:
-      - name: Get Meta
-        id: meta
-        run: |
-          echo REPO_NAME=$(echo ${GITHUB_REPOSITORY} | awk -F"/" '{print $2}') >> $GITHUB_OUTPUT
-          echo DATE_RELEASE=$(echo "`date +'%Y.%m.%d'`") >> $GITHUB_OUTPUT
-
       - name: Notify User
         uses: https://${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/gitea-workflows-notification@main
         with:
           success: needs.release.result == 'success' # && needs.test.result == 'success'
-          repo_name: ${{ steps.meta.outputs.REPO_NAME }}
-          image_tag_ending: ${{ env.IMAGE_TAG_ENDING }}
-          date_release: ${{ steps.meta.outputs.DATE_RELEASE }}
+          development: true
           pushover_user: ${{ secrets.PUSHOVER_USER }}
           pushover_token: ${{ secrets.PUSHOVER_TOKEN }}
