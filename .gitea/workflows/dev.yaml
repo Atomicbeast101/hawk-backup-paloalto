@@ -16,50 +16,56 @@ jobs:
           registry_password: ${{ secrets.LOCAL_ACR_PASSWORD }}
           development: true
 
-  # test:
-  #   name: Test
-  #   runs-on: ubuntu-latest
-  #   container:
-  #     image: catthehacker/ubuntu:act-latest
-  #   steps:
-  #     - name: Run container and capture logs
-  #       env:
-  #         SWITCH_HOST: 
-  #         SWITCH_USERNAME: 
-  #         SWITCH_PASSWORD: 
-  #         SFTP_HOST: 
-  #         SFTP_USERNAME: 
-  #         SFTP_PASSWORD: 
-  #         SFTP_PATH: 
-  #         PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER }}
-  #         PUSHOVER_APP_TOKEN: ${{ secrets.PUSHOVER_TOKEN }}
-  #       run: |
-  #         docker run --name test ${{ env.IMAGE_BASE }}/${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}${{ env.IMAGE_TAG_ENDING }} /bin/bash -c "/app/setup.sh; /app/run.sh"
-  #         docker wait test
-  #         docker logs test > logs.txt
-  #         docker rm test
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    container:
+      image: catthehacker/ubuntu:act-latest
+    steps:
+      - name: Get Meta
+        id: meta
+        run: |
+          echo REPO_NAME=$(echo ${GITHUB_REPOSITORY} | awk -F"/" '{print $2}') >> $GITHUB_OUTPUT
+          echo DATE_RELEASE=$(echo "`date +'%Y.%m.%d'`") >> $GITHUB_OUTPUT
 
-  #     - name: Send Logs via Email
-  #       uses: dawidd6/action-send-mail@v6
-  #       with:
-  #         connection_url: ${{ secrets.SMTP_CONNECTION }}
-  #         subject: 
-  #         to: ${{ vars.SMTP_RECEIVER }}
-  #         from: Gitea DevOps - Test Results for ${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}${{ env.IMAGE_TAG_ENDING }}
-  #         body: Please see attached logs file.
-  #         attachments: logs.txt
+      - name: Run container and capture logs
+        env:
+          FIREWALL_HOST: ${{ vars.FIREWALL_HOST }}
+          FIREWALL_USERNAME: ${{ vars.FIREWALL_USERNAME }}
+          FIREWALL_PASSWORD: ${{ secrets.FIREWALL_PASSWORD }}
+          SFTP_HOST: ${{ vars.SFTP_HOST }}
+          SFTP_USERNAME: ${{ vars.SFTP_USERNAME }}
+          SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+          SFTP_PATH: /backup/network_configs__TEST
+          PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER }}
+          PUSHOVER_APP_TOKEN: ${{ secrets.PUSHOVER_TOKEN }}
+        run: |
+          docker run --name test ${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev /bin/bash -c "/app/setup.sh; /app/run.sh"
+          docker wait test
+          docker logs test > logs.txt
+          docker rm test
+
+      - name: Send Logs via Email
+        uses: dawidd6/action-send-mail@v6
+        with:
+          connection_url: smtp://${{ vars.SMTP_USERNAME }}:${{ secrets.SMTP_PASSWORD }}@${{ vars.SMTP_SERVER }}:${{ vars.SMTP_PORT }}
+          to: ${{ vars.SMTP_RECEIVER }}
+          from: ${{ vars.SMTP_USERNAME }}
+          subject: Gitea DevOps - Test Results for ${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev
+          body: Please see attached logs file.
+          attachments: logs.txt
 
   report:
     name: Report
     continue-on-error: true
     needs: 
       - release
-      # - test
+      - test
     steps:
       - name: Notify User
         uses: https://${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/gitea-workflows-notification@main
         with:
-          success: needs.release.result == 'success' # && needs.test.result == 'success'
+          success: needs.release.result == 'success' && needs.test.result == 'success'
           development: true
           pushover_user: ${{ secrets.PUSHOVER_USER }}
           pushover_token: ${{ secrets.PUSHOVER_TOKEN }}
