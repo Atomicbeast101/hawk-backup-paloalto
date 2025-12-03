@@ -14,7 +14,6 @@ jobs:
           registry_url: ${{ vars.LOCAL_ACR_URL }}
           registry_username: ${{ vars.LOCAL_ACR_USERNAME }}
           registry_password: ${{ secrets.LOCAL_ACR_PASSWORD }}
-          development: true
 
   report:
     name: Report
@@ -26,6 +25,5 @@ jobs:
         uses: https://${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/gitea-workflows-notification@main
         with:
           success: needs.release.result == 'success'
-          development: false
           pushover_user: ${{ secrets.PUSHOVER_USER }}
           pushover_token: ${{ secrets.PUSHOVER_TOKEN }}
