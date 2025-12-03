@@ -4,6 +4,9 @@ on:
     branches:
       - dev
 
+env:
+  REPO_NAME: ${{ github.repository.split('/')[-1] }}
+
 jobs:
   release:
     name: Release
@@ -28,6 +31,7 @@ jobs:
         id: meta
         run: |
           echo DATE_RELEASE=$(echo "`date +'%Y.%m.%d'`") >> $GITHUB_OUTPUT
+          echo $REPO_NAME
 
       - name: Run container and capture logs
         env:
@@ -41,9 +45,9 @@ jobs:
           PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER }}
           PUSHOVER_APP_TOKEN: ${{ secrets.PUSHOVER_TOKEN }}
         run: |
-          docker run --name ${{ github.repository.split('/')[-1] }}-auto-test --entrypoint /bin/bash ${{ vars.LOCAL_ACR_URL }}/${{ github.repository }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev -c '/app/setup.sh'
-          docker wait ${{ github.repository.split('/')[-1] }}-auto-test
-          docker logs ${{ github.repository.split('/')[-1] }}-auto-test > logs.txt
+          docker run --name ${{ env.REPO_NAME }}-auto-test --entrypoint /bin/bash ${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/${{ env.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev -c '/app/setup.sh'
+          docker wait ${{ env.REPO_NAME }}-auto-test
+          docker logs ${{ env.REPO_NAME }}-auto-test > logs.txt
 
       - name: Send Logs via Email
         uses: dawidd6/action-send-mail@v6
@@ -55,7 +59,7 @@ jobs:
           secure: true
           to: ${{ vars.SMTP_RECEIVER }}
           from: Gitea DevOps
-          subject: Gitea DevOps - Test Results for ${{ github.repository.split('/')[-1] }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev
+          subject: Gitea DevOps - Test Results for ${{ env.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev
           body: Please see attached logs file.
           attachments: logs.txt
           ignore_cert: true
@@ -63,7 +67,7 @@ jobs:
       - name: Remove container
         continue-on-error: true
         run: |
-          docker rm ${{ github.repository.split('/')[-1] }}-auto-test
+          docker rm ${{ env.REPO_NAME }}-auto-test
 
   report:
     name: Report
