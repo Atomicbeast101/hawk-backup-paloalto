@@ -32,6 +32,7 @@ jobs:
         run: |
           echo DATE_RELEASE=$(echo "`date +'%Y.%m.%d'`") >> $GITHUB_OUTPUT
           echo $REPO_NAME
+          echo "${{ github.repository }}"
 
       - name: Run container and capture logs
         env:
