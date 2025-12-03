@@ -18,6 +18,8 @@ jobs:
 
   test:
     name: Test
+    needs: 
+      - release
     runs-on: ubuntu-latest
     container:
       image: catthehacker/ubuntu:act-latest
