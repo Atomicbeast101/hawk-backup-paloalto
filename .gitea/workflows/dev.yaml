@@ -42,8 +42,8 @@ jobs:
           PUSHOVER_APP_TOKEN: ${{ secrets.PUSHOVER_TOKEN }}
         run: |
           docker run --entrypoint /bin/bash ${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/${{ github.repository.split('/')[-1] }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev -c '/app/setup.sh'
-          docker wait ${{ steps.meta.outputs.REPO_NAME }}-auto-test
-          docker logs ${{ steps.meta.outputs.REPO_NAME }}-auto-test > logs.txt
+          docker wait ${{ github.repository.split('/')[-1] }}-auto-test
+          docker logs ${{ github.repository.split('/')[-1] }}-auto-test > logs.txt
 
       - name: Send Logs via Email
         uses: dawidd6/action-send-mail@v6
@@ -53,9 +53,9 @@ jobs:
           username: ${{ vars.SMTP_USERNAME }}
           password: ${{ secrets.SMTP_PASSWORD }}
           secure: true
-          to: ${{ vars.SMTP_USERNAME }}
+          to: ${{ vars.SMTP_RECEIVER }}
           from: Gitea DevOps
-          subject: Gitea DevOps - Test Results for ${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev
+          subject: Gitea DevOps - Test Results for ${{ github.repository.split('/')[-1] }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev
           body: Please see attached logs file.
           attachments: logs.txt
           ignore_cert: true
@@ -63,7 +63,7 @@ jobs:
       - name: Remove container
         continue-on-error: true
         run: |
-          docker rm ${{ steps.meta.outputs.REPO_NAME }}-auto-test
+          docker rm ${{ github.repository.split('/')[-1] }}-auto-test
 
   report:
     name: Report
