@@ -4,9 +4,6 @@ on:
     branches:
       - dev
 
-env:
-  REPO_NAME: ${{ github.repository.split('/')[-1] }}
-
 jobs:
   release:
     name: Release
@@ -31,7 +28,7 @@ jobs:
         id: meta
         run: |
           echo DATE_RELEASE=$(echo "`date +'%Y.%m.%d'`") >> $GITHUB_OUTPUT
-          echo "${{ env.REPO_NAME }}"
+          echo "${{ github.repository.split('/')[-1] }}"
 
       - name: Run container and capture logs
         env:
