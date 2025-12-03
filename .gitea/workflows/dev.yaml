@@ -42,7 +42,10 @@ jobs:
           PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER }}
           PUSHOVER_APP_TOKEN: ${{ secrets.PUSHOVER_TOKEN }}
         run: |
-          docker run --rm -it --entrypoint /bin/bash ${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev -c '/app/setup.sh; /app/run.sh' > logs.txt 2>&1
+          docker rm ${{ steps.meta.outputs.REPO_NAME }}-auto-test
+          docker run -it --entrypoint /bin/bash ${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev -c '/app/setup.sh; /app/run.sh'
+          docker wait ${{ steps.meta.outputs.REPO_NAME }}-auto-test
+          docker logs ${{ steps.meta.outputs.REPO_NAME }}-auto-test > logs.txt
 
       - name: Send Logs via Email
         uses: dawidd6/action-send-mail@v6
@@ -54,10 +57,15 @@ jobs:
           body: Please see attached logs file.
           attachments: logs.txt
 
+      - name: Remove container
+        continue-on-error: true
+        run: |
+          docker rm ${{ steps.meta.outputs.REPO_NAME }}-auto-test
+
   report:
     name: Report
     continue-on-error: true
-    needs: 
+    needs:
       - release
       - test
     steps:
