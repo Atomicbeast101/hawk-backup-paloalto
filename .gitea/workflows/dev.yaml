@@ -91,14 +91,9 @@ jobs:
       - release
       - test
     steps:
-      - name: debugging
-        run: |
-          echo "${{ !contains(needs.*.result, 'failure') }}"
-
       - name: Notify User
-        uses: https://${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/gitea-workflows-notification@main
+        uses: https://${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/gitea-workflows-notification@dev
         with:
-          success: ${{ !contains(needs.*.result, 'failure') }}
           development: true
           tested: true
           pushover_user: ${{ secrets.PUSHOVER_USER }}
