@@ -57,10 +57,13 @@ jobs:
 
       - name: Check If Backed Up File Exists in SFTP
         env:
+          SFTP_HOST: ${{ vars.SFTP_HOST }}
+          SFTP_USERNAME: ${{ vars.SFTP_USERNAME }}
+          SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
           BACKUP_PATH: /backup/network_configs__TEST
           BACKUP_FILE: ${{ vars.FIREWALL_HOST }}__config__${{ steps.meta.outputs.DATE_RELEASE }}.xml
         run: |
-          sshpass -p '${{ secrets.SFTP_PASSWORD }}' sftp -o StrictHostKeyChecking=no -b ${SFTP_BATCH_FILE} ${{ vars.SFTP_USERNAME }}@${{ vars.SFTP_HOST }} <<< "get $BACKUP_PATH/$BACKUP_FILE"
+          sshpass -p "$SFTP_PASSWORD" sftp -o StrictHostKeyChecking=no -b ${SFTP_BATCH_FILE} $SFTP_USERNAME@$SFTP_HOST <<< "get $BACKUP_PATH/$BACKUP_FILE"
           if [ $? -eq 0 ]; then
             echo "Backup file found in SFTP endpoint!"
             exit 0
@@ -90,15 +93,17 @@ jobs:
     needs:
       - release
       - test
+    env:
+      SUCCESS: ${{ needs.release.result || needs.test.result }}
     steps:
       - name: debugging
         run: |
-          echo "${{ success() }}"
-          echo "${{ failure() }}"
+          echo "${{ env.SUCCESS }}"
 
       - name: Notify User
-        uses: https://${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/gitea-workflows-notification@dev
+        uses: https://${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/gitea-workflows-notification@main
         with:
+          success: ${{ env.SUCCESS }}
           development: true
           tested: true
           pushover_user: ${{ secrets.PUSHOVER_USER }}
