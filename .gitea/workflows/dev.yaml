@@ -30,7 +30,7 @@ jobs:
           echo REPO_NAME=$(echo "${GITHUB_REPOSITORY##*/}") >> $GITHUB_OUTPUT
           echo DATE_RELEASE=$(echo "`date +'%Y.%m.%d'`") >> $GITHUB_OUTPUT
 
-      - name: Run container and capture logs
+      - name: Run Container & Capture Logs
         run: |
           CONTAINER_NAME="${{ steps.meta.outputs.REPO_NAME }}-auto-test"
           if docker ps -a --filter "name=$CONTAINER_NAME" --format "{{.ID}}" | grep -q .; then
@@ -54,20 +54,32 @@ jobs:
           docker logs $CONTAINER_NAME > logs.txt
           docker rm $CONTAINER_NAME
 
-      - name: Send Logs via Email
-        uses: dawidd6/action-send-mail@v6
-        with:
-          server_address: ${{ vars.SMTP_SERVER }}
-          server_port: ${{ vars.SMTP_PORT }}
-          username: ${{ vars.SMTP_USERNAME }}
-          password: ${{ secrets.SMTP_PASSWORD }}
-          secure: true
-          to: ${{ vars.SMTP_RECEIVER }}
-          from: Gitea DevOps
-          subject: Gitea DevOps - Test Results for ${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev
-          body: Please see attached logs file.
-          attachments: logs.txt
-          ignore_cert: true
+      - name: Check If Backed Up File Exists in SFTP
+        run: |
+          BACKUP_CONFIG_FILE=${{ vars.FIREWALL_HOST }}__config__${{ steps.meta.outputs.DATE_RELEASE }}.xml
+          sshpass -p '${{ secrets.SFTP_PASSWORD }}' | sftp -o StrictHostKeyChecking=no ${{ vars.SFTP_USERNAME }}:${{ vars.SFTP_HOST }}:/backup/network_configs__TEST/$BACKUP_CONFIG_FILE
+          RETVAL=$?
+          if [ $RETVAL -ne 0 ]; then
+            echo "Backup file not found in SFTP endpoint!"
+            exit 1
+          else
+            echo "Backup file found in SFTP endpoint!"
+          fi
+
+      # - name: Send Logs via Email
+      #   uses: dawidd6/action-send-mail@v6
+      #   with:
+      #     server_address: ${{ vars.SMTP_SERVER }}
+      #     server_port: ${{ vars.SMTP_PORT }}
+      #     username: ${{ vars.SMTP_USERNAME }}
+      #     password: ${{ secrets.SMTP_PASSWORD }}
+      #     secure: true
+      #     to: ${{ vars.SMTP_RECEIVER }}
+      #     from: Gitea DevOps
+      #     subject: Gitea DevOps - Test Results for ${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev
+      #     body: Please see attached logs file.
+      #     attachments: logs.txt
+      #     ignore_cert: true
 
   report:
     name: Report
