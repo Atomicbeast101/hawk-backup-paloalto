@@ -40,7 +40,7 @@ jobs:
           fi
           docker run --name $CONTAINER_NAME \
             -e FIREWALL_HOST=${{ vars.FIREWALL_HOST }} \
-            -e FIREWALL_USERNAME=${{ secrets.FIREWALL_PASSWORD }} \
+            -e FIREWALL_USERNAME=${{ vars.FIREWALL_USERNAME }} \
             -e FIREWALL_PASSWORD=${{ secrets.FIREWALL_PASSWORD }} \
             -e SFTP_HOST=${{ vars.SFTP_HOST }} \
             -e SFTP_USERNAME=${{ vars.SFTP_USERNAME }} \
