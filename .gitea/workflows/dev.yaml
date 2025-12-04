@@ -67,20 +67,19 @@ jobs:
             exit 1
           fi
 
-      # - name: Send Logs via Email
-      #   uses: dawidd6/action-send-mail@v6
-      #   with:
-      #     server_address: ${{ vars.SMTP_SERVER }}
-      #     server_port: ${{ vars.SMTP_PORT }}
-      #     username: ${{ vars.SMTP_USERNAME }}
-      #     password: ${{ secrets.SMTP_PASSWORD }}
-      #     secure: true
-      #     to: ${{ vars.SMTP_RECEIVER }}
-      #     from: Gitea DevOps
-      #     subject: Gitea DevOps - Test Results for ${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev
-      #     body: Please see attached logs file.
-      #     attachments: logs.txt
-      #     ignore_cert: true
+      - name: Send Logs via Email
+        uses: dawidd6/action-send-mail@v6
+        with:
+          server_address: ${{ vars.SMTP_SERVER }}
+          server_port: ${{ vars.SMTP_PORT }}
+          username: ${{ vars.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          secure: true
+          to: ${{ vars.SMTP_RECEIVER }}
+          from: Gitea DevOps
+          subject: Gitea DevOps - Test Results for ${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev
+          body: file://logs.txt
+          ignore_cert: true
 
   report:
     name: Report
