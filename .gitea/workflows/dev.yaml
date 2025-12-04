@@ -83,6 +83,7 @@ jobs:
 
   report:
     name: Report
+    if: always()
     continue-on-error: true
     needs:
       - release
@@ -90,7 +91,6 @@ jobs:
     steps:
       - name: Notify User
         uses: https://${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/gitea-workflows-notification@dev
-        continue-on-error: true
         with:
           success: needs.release.result == 'success' && needs.test.result == 'success'
           development: true
