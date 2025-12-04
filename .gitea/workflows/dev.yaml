@@ -48,7 +48,7 @@ jobs:
             docker stop $CONTAINER_NAME
             docker rm -f $CONTAINER_NAME
           fi
-          docker run --name $CONTAINER_NAME ${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev /app/script.sh
+          docker run --name $CONTAINER_NAME ${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev /app/setup.sh
           docker wait $CONTAINER_NAME
           docker logs $CONTAINER_NAME > logs.txt
           docker rm $CONTAINER_NAME
