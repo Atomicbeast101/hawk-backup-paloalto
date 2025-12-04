@@ -31,16 +31,6 @@ jobs:
           echo DATE_RELEASE=$(echo "`date +'%Y.%m.%d'`") >> $GITHUB_OUTPUT
 
       - name: Run container and capture logs
-        env:
-          FIREWALL_HOST: ${{ vars.FIREWALL_HOST }}
-          FIREWALL_USERNAME: ${{ vars.FIREWALL_USERNAME }}
-          FIREWALL_PASSWORD: ${{ secrets.FIREWALL_PASSWORD }}
-          SFTP_HOST: ${{ vars.SFTP_HOST }}
-          SFTP_USERNAME: ${{ vars.SFTP_USERNAME }}
-          SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
-          SFTP_PATH: /backup/network_configs__TEST
-          PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER }}
-          PUSHOVER_APP_TOKEN: ${{ secrets.PUSHOVER_TOKEN }}
         run: |
           CONTAINER_NAME="${{ steps.meta.outputs.REPO_NAME }}-auto-test"
           if docker ps -a --filter "name=$CONTAINER_NAME" --format "{{.ID}}" | grep -q .; then
@@ -48,7 +38,18 @@ jobs:
             docker stop $CONTAINER_NAME
             docker rm -f $CONTAINER_NAME
           fi
-          docker run --name $CONTAINER_NAME ${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev bash -c "/app/setup.sh && /app/run.sh"
+          docker run --name $CONTAINER_NAME \
+            -e FIREWALL_HOST=${{ vars.FIREWALL_HOST }} \
+            -e FIREWALL_USERNAME=${{ secrets.FIREWALL_PASSWORD }} \
+            -e FIREWALL_PASSWORD=${{ secrets.FIREWALL_PASSWORD }} \
+            -e SFTP_HOST=${{ vars.SFTP_HOST }} \
+            -e SFTP_USERNAME=${{ vars.SFTP_USERNAME }} \
+            -e SFTP_PASSWORD=${{ secrets.SFTP_PASSWORD }} \
+            -e SFTP_PATH="/backup/network_configs__TEST" \
+            -e PUSHOVER_USER_KEY=${{ secrets.PUSHOVER_USER }} \
+            -e PUSHOVER_APP_TOKEN=${{ secrets.PUSHOVER_TOKEN }} \
+            ${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev \
+            bash -c "/app/setup.sh && /app/run.sh"
           docker wait $CONTAINER_NAME
           docker logs $CONTAINER_NAME > logs.txt
           docker rm $CONTAINER_NAME
