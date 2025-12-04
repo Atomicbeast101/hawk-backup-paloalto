@@ -38,6 +38,7 @@ jobs:
             docker stop $CONTAINER_NAME
             docker rm -f $CONTAINER_NAME
           fi
+          docker pull ${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev
           docker run --name $CONTAINER_NAME \
             -e FIREWALL_HOST=${{ vars.FIREWALL_HOST }} \
             -e FIREWALL_USERNAME=${{ vars.FIREWALL_USERNAME }} \
@@ -57,13 +58,13 @@ jobs:
       - name: Check If Backed Up File Exists in SFTP
         run: |
           BACKUP_CONFIG_FILE=${{ vars.FIREWALL_HOST }}__config__${{ steps.meta.outputs.DATE_RELEASE }}.xml
-          sshpass -p '${{ secrets.SFTP_PASSWORD }}' | sftp -o StrictHostKeyChecking=no ${{ vars.SFTP_USERNAME }}:${{ vars.SFTP_HOST }}:/backup/network_configs__TEST/$BACKUP_CONFIG_FILE
-          RETVAL=$?
-          if [ $RETVAL -ne 0 ]; then
+          sshpass -p '${{ secrets.SFTP_PASSWORD }}' | sftp -o StrictHostKeyChecking=no ${{ vars.SFTP_USERNAME }}:${{ vars.SFTP_HOST }} <<< /backup/network_configs__TEST/$BACKUP_CONFIG_FILE
+          if [ $? -eq 0 ]; then
+            echo "Backup file found in SFTP endpoint!"
+            exit 0
+          else
             echo "Backup file not found in SFTP endpoint!"
             exit 1
-          else
-            echo "Backup file found in SFTP endpoint!"
           fi
 
       # - name: Send Logs via Email
