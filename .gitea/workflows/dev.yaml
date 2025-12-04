@@ -58,7 +58,7 @@ jobs:
       - name: Check If Backed Up File Exists in SFTP
         run: |
           BACKUP_CONFIG_FILE=${{ vars.FIREWALL_HOST }}__config__${{ steps.meta.outputs.DATE_RELEASE }}.xml
-          sshpass -p '${{ secrets.SFTP_PASSWORD }}' | sftp -o StrictHostKeyChecking=no ${{ vars.SFTP_USERNAME }}:${{ vars.SFTP_HOST }} <<< "get /backup/network_configs__TEST/$BACKUP_CONFIG_FILE"
+          sshpass -p '${{ secrets.SFTP_PASSWORD }}' sftp -o StrictHostKeyChecking=no ${{ vars.SFTP_USERNAME }}:${{ vars.SFTP_HOST }} <<< "get /backup/network_configs__TEST/$BACKUP_CONFIG_FILE"
           if [ $? -eq 0 ]; then
             echo "Backup file found in SFTP endpoint!"
             exit 0
