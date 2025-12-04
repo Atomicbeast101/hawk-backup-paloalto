@@ -56,9 +56,11 @@ jobs:
           docker rm $CONTAINER_NAME
 
       - name: Check If Backed Up File Exists in SFTP
+        env:
+          BACKUP_PATH: /backup/network_configs__TEST
+          BACKUP_FILE: ${{ vars.FIREWALL_HOST }}__config__${{ steps.meta.outputs.DATE_RELEASE }}.xml
         run: |
-          BACKUP_CONFIG_FILE="${{ vars.FIREWALL_HOST }}__config__${{ steps.meta.outputs.DATE_RELEASE }}.xml"
-          sshpass -p '${{ secrets.SFTP_PASSWORD }}' sftp -o StrictHostKeyChecking=no ${{ vars.SFTP_USERNAME }}:${{ vars.SFTP_HOST }} <<< "get /backup/network_configs__TEST/$BACKUP_CONFIG_FILE"
+          sshpass -p '${{ secrets.SFTP_PASSWORD }}' sftp -o StrictHostKeyChecking=no -b ${SFTP_BATCH_FILE} ${{ vars.SFTP_USERNAME }}@${{ vars.SFTP_HOST }} <<< "get $BACKUP_PATH/$BACKUP_FILE"
           if [ $? -eq 0 ]; then
             echo "Backup file found in SFTP endpoint!"
             exit 0
