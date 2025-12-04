@@ -94,5 +94,6 @@ jobs:
         with:
           success: success() && needs.release.result == 'success' && needs.test.result == 'success'
           development: true
+          tested: true
           pushover_user: ${{ secrets.PUSHOVER_USER }}
           pushover_token: ${{ secrets.PUSHOVER_TOKEN }}
