@@ -42,9 +42,15 @@ jobs:
           PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER }}
           PUSHOVER_APP_TOKEN: ${{ secrets.PUSHOVER_TOKEN }}
         run: |
-          docker run --name ${{ steps.meta.outputs.REPO_NAME }}-auto-test --entrypoint /bin/bash ${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev -c 'ls; ls /; ls /app'
-          docker wait ${{ steps.meta.outputs.REPO_NAME }}-auto-test
-          docker logs ${{ steps.meta.outputs.REPO_NAME }}-auto-test > logs.txt
+          CONTAINER_NAME="${{ steps.meta.outputs.REPO_NAME }}-auto-test"
+          if docker ps -a --filter "name=$CONTAINER_NAME" --format "{{.ID}}" | grep -q .; then
+            echo "Stopping and removing existing container: $CONTAINER_NAME..."
+            docker stop $CONTAINER_NAME
+            docker rm -f $CONTAINER_NAME
+          fi
+          docker run --name $CONTAINER_NAME --entrypoint /bin/bash ${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev -c 'ls; ls /; ls /app'
+          docker wait $CONTAINER_NAME
+          docker logs $CONTAINER_NAME > logs.txt
 
       - name: Send Logs via Email
         uses: dawidd6/action-send-mail@v6
