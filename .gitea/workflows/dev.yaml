@@ -48,9 +48,10 @@ jobs:
             docker stop $CONTAINER_NAME
             docker rm -f $CONTAINER_NAME
           fi
-          docker run --name $CONTAINER_NAME --entrypoint /bin/bash ${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev -c 'ls; ls /; ls /app'
+          docker run --name $CONTAINER_NAME --entrypoint /bin/bash ${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev -c '/app/script.sh'
           docker wait $CONTAINER_NAME
           docker logs $CONTAINER_NAME > logs.txt
+          docker rm $CONTAINER_NAME
 
       - name: Send Logs via Email
         uses: dawidd6/action-send-mail@v6
@@ -66,11 +67,6 @@ jobs:
           body: Please see attached logs file.
           attachments: logs.txt
           ignore_cert: true
-
-      - name: Remove container
-        continue-on-error: true
-        run: |
-          docker rm ${{ steps.meta.outputs.REPO_NAME }}-auto-test
 
   report:
     name: Report
