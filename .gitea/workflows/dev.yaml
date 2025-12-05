@@ -38,7 +38,6 @@ jobs:
             docker stop $CONTAINER_NAME
             docker rm -f $CONTAINER_NAME
           fi
-          docker pull ${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev
           docker run --name $CONTAINER_NAME \
             -e FIREWALL_HOST=${{ vars.FIREWALL_HOST }} \
             -e FIREWALL_USERNAME=${{ vars.FIREWALL_USERNAME }} \
@@ -101,7 +100,7 @@ jobs:
           echo "${{ env.SUCCESS }}"
 
       - name: Notify User
-        uses: https://${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/gitea-workflows-notification@main
+        uses: https://${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/gitea-workflows-notification@dev
         with:
           success: ${{ env.SUCCESS }}
           development: true
