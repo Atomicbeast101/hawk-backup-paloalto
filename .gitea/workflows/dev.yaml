@@ -62,6 +62,7 @@ jobs:
           BACKUP_PATH: /backup/network_configs__TEST
           BACKUP_FILE: ${{ vars.FIREWALL_HOST }}__config__${{ steps.meta.outputs.DATE_RELEASE }}.xml
         run: |
+          apt install sshpass -y
           sshpass -p "$SFTP_PASSWORD" sftp -oBatchMode=no -oStrictHostKeyChecking=no -b - $SFTP_USERNAME@$SFTP_HOST <<EOF
           ls $BACKUP_PATH/$BACKUP_FILE
           EOF
