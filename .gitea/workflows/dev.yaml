@@ -51,7 +51,6 @@ jobs:
             ${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev \
             bash -c "/app/setup.sh && /app/run.sh"
           docker wait $CONTAINER_NAME
-          docker logs $CONTAINER_NAME > logs.txt
           docker rm $CONTAINER_NAME
 
       - name: Check If Backed Up File Exists in SFTP
@@ -73,20 +72,6 @@ jobs:
             echo "Backup file not found in SFTP endpoint!"
             exit 1
           fi
-
-      - name: Send Logs via Email
-        uses: dawidd6/action-send-mail@v6
-        with:
-          server_address: ${{ vars.SMTP_SERVER }}
-          server_port: ${{ vars.SMTP_PORT }}
-          username: ${{ vars.SMTP_USERNAME }}
-          password: ${{ secrets.SMTP_PASSWORD }}
-          secure: true
-          to: ${{ vars.SMTP_RECEIVER }}
-          from: Gitea DevOps
-          subject: Gitea DevOps - Test Results for ${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev
-          body: Test output # file://logs.txt
-          ignore_cert: true
 
   report:
     name: Report
