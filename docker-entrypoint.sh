@@ -19,4 +19,5 @@ echo "$CRON_SCHEDULE /app/run.sh >> /var/log/cron.log 2>&1" > /etc/crontabs/root
 
 # Run cron in foreground
 echo "Started cron job!"
-exec crond -f
+mkdir /var/log
+exec crond -f && tail -f /var/log/cron.log
