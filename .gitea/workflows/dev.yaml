@@ -84,7 +84,7 @@ jobs:
       SUCCESS: ${{ needs.release.result == 'success' && needs.test.result == 'success' }}
     steps:
       - name: Notify User
-        uses: https://${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/gitea-workflows-notification@dev
+        uses: https://${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/gitea-workflows-notification@main
         with:
           success: ${{ env.SUCCESS }}
           development: true
