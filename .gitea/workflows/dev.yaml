@@ -62,7 +62,9 @@ jobs:
           BACKUP_PATH: /backup/network_configs__TEST
           BACKUP_FILE: ${{ vars.FIREWALL_HOST }}__config__${{ steps.meta.outputs.DATE_RELEASE }}.xml
         run: |
-          sshpass -p "$SFTP_PASSWORD" sftp -o StrictHostKeyChecking=no -b ${SFTP_BATCH_FILE} $SFTP_USERNAME@$SFTP_HOST <<< "get $BACKUP_PATH/$BACKUP_FILE"
+          sftp -oBatchMode=no -b - $SFTP_USERNAME@$SFTP_HOST <<EOF
+          ls $BACKUP_PATH/$BACKUP_FILE
+          EOF
           if [ $? -eq 0 ]; then
             echo "Backup file found in SFTP endpoint!"
             exit 0
