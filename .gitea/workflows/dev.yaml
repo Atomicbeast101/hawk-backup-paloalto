@@ -60,7 +60,7 @@ jobs:
           SFTP_USERNAME: ${{ vars.SFTP_USERNAME }}
           SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
           BACKUP_PATH: /backup/network_configs__TEST
-          BACKUP_FILE: ${{ vars.FIREWALL_HOST }}__config__${{ steps.meta.outputs.DATE_RELEASE }}.xm
+          BACKUP_FILE: ${{ vars.FIREWALL_HOST }}__config__${{ steps.meta.outputs.DATE_RELEASE }}.xml
         run: |
           apt update; apt install sshpass -y
           sshpass -p "$SFTP_PASSWORD" sftp -oBatchMode=no -oStrictHostKeyChecking=no -b - $SFTP_USERNAME@$SFTP_HOST <<EOF
@@ -85,7 +85,7 @@ jobs:
           to: ${{ vars.SMTP_RECEIVER }}
           from: Gitea DevOps
           subject: Gitea DevOps - Test Results for ${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}-dev
-          body: file://logs.txt
+          body: Test output # file://logs.txt
           ignore_cert: true
 
   report:
