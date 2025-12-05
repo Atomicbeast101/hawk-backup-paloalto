@@ -94,7 +94,7 @@ jobs:
       - release
       - test
     env:
-      SUCCESS: ${{ needs.release.result == 'success' || needs.test.result == 'success' }}
+      SUCCESS: ${{ needs.release.result == 'success' && needs.test.result == 'success' }}
     steps:
       - name: debugging
         run: |
