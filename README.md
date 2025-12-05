@@ -11,7 +11,7 @@ Docker-based service that leverages Ansible to perform backups for Palo Alto fir
 ## How it Works
 
 Whenever the cron schedule hits, it runs an Ansible playbook that does the following:
-1) Create `/app/.downloads` folder
+1) Create `/app/.downloads` folder.
 2) Generates an API token from Palo Alto firewall.
 3) Uses the API token to download the config from firewall onto `/app/.downloads` folder.
 4) Uploads that config file to SFTP endpoint.
