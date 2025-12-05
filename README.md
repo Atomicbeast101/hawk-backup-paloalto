@@ -22,6 +22,7 @@ If any of the tasks above fails, a Pushover notification will be sent stating th
 ## Setup - Docker
 
 Here's an example of how to run this application in Docker:
+
 ```bash
 docker run \
     -e FIREWALL_HOST=firewall.example.com \
