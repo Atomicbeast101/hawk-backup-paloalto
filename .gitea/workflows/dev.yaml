@@ -54,7 +54,7 @@ jobs:
           docker wait $CONTAINER_NAME
           docker rm $CONTAINER_NAME
 
-      - name: Check If Backed Up File Exists in SFTP
+      - name: Check If Backup File Exists in SFTP
         env:
           SFTP_HOST: ${{ vars.SFTP_HOST }}
           SFTP_USERNAME: ${{ vars.SFTP_USERNAME }}
