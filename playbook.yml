@@ -152,4 +152,4 @@
             body:
               user: "{{ pushover_user }}"
               token: "{{ pushover_token }}"
-              message: "❌ Unable to perform backup cleanup activity for {{ inventory_hostname }}!"
+              message: "❌ Unable to perform backup cleanup activity for {{ firewall_host }}!"
