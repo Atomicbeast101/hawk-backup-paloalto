@@ -17,6 +17,8 @@
     # Pushover
     pushover_user: "{{ lookup('ansible.builtin.env', 'PUSHOVER_USER_KEY') }}"
     pushover_token: "{{ lookup('ansible.builtin.env', 'PUSHOVER_APP_TOKEN') }}"
+    # Cleanup Old Backups
+    backup_retention_in_days: "{{ lookup('ansible.builtin.env', 'BACKUP_RETENTION_IN_DAYS', default=10) | int }}"
   tasks:
     - name: Perform Backup
       block:
@@ -79,3 +81,75 @@
               user: "{{ pushover_user }}"
               token: "{{ pushover_token }}"
               message: "❌ Unable to perform config backup for {{ firewall_host }}!"
+
+        - name: Stop Playbook
+          ansible.builtin.fail:
+            msg: Forced playbook to stop to prevent backup cleanup activity from happening.
+
+    - name: Cleanup Old Backups
+      block:
+        - name: Get Cutoff Epoch
+          set_fact:
+            cutoff_epoch: "{{ lookup('pipe', 'date +%s') | int - (backup_retention_in_days * 86400) }}"
+
+        - name: Get Cutoff Date
+          set_fact:
+            cutoff_date: "{{ '%Y-%m-%d' | strftime(cutoff_epoch) | to_datetime('%Y-%m-%d') }}"
+
+        - name: Removing Any Files Older than this Date
+          debug:
+            msg: "{{ cutoff_date }}"
+
+        - name: Get Files from SFTP
+          delegate_to: localhost
+          ansible.builtin.shell: "echo 'ls -l' | sshpass -p '{{ sftp_password }}' sftp -o StrictHostKeyChecking=no -P {{ sftp_port }} {{ sftp_username }}@{{ sftp_host }}:{{ sftp_path }}"
+          register: sftp_files
+          changed_when: false
+
+        - name: Backup Files Found from SFTP
+          debug:
+            msg: "{{ sftp_files.stdout_lines | map('split', ' ') | map('last') | select('match', '^' + inventory_hostname + '__config__') }}"
+        
+        - name: Create List of Files with Dates
+          set_fact: 
+            sftp_files_with_dates: >-
+              {{
+                sftp_files_with_dates | default([]) + [{
+                  'file': item,
+                  'date': (item | replace(inventory_hostname + '__config__', '') | replace('.xml', '') | to_datetime('%Y.%m.%d'))
+                }]
+              }}
+          loop: "{{ sftp_files.stdout_lines | map('split', ' ') | map('last') | select('match', '^' + inventory_hostname + '__config__') }}"
+
+        - name: "Find Files Older than {{ backup_retention_in_days }} Days"
+          set_fact:
+            old_sftp_files: >-
+              {{
+                sftp_files_with_dates
+                | selectattr('date', 'defined')
+                | selectattr('date', 'lt', cutoff_date)
+                | list
+              }}
+
+        - name: Will Be Removing These Old Backup Files
+          debug:
+            msg: "{{ old_sftp_files | map(attribute='file') | list }}"
+        
+        - name: Remove Old Backup Files from SFTP
+          delegate_to: localhost
+          ansible.builtin.shell: "echo 'rm {{ item.file }}' | sshpass -p '{{ sftp_password }}' sftp -o StrictHostKeyChecking=no -P {{ sftp_port }} {{ sftp_username }}@{{ sftp_host }}:{{ sftp_path }}"
+          loop: "{{ old_sftp_files }}"
+
+      rescue:
+        - name: Notify Admin of Failed Backup Cleanup
+          delegate_to: localhost
+          ansible.builtin.uri:
+            url: https://api.pushover.net/1/messages.json
+            method: POST
+            headers: 
+              Content-Type: application/json
+            body_format: json
+            body:
+              user: "{{ pushover_user }}"
+              token: "{{ pushover_token }}"
+              message: "❌ Unable to perform backup cleanup activity for {{ inventory_hostname }}!"
