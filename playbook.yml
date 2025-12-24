@@ -108,7 +108,7 @@
 
         - name: Backup Files Found from SFTP
           debug:
-            msg: "{{ sftp_files.stdout_lines | map('split', ' ') | map('last') | select('match', '^' + inventory_hostname + '__config__') }}"
+            msg: "{{ sftp_files.stdout_lines | map('split', ' ') | map('last') | select('match', '^' + firewall_host + '__config__') }}"
         
         - name: Create List of Files with Dates
           set_fact: 
@@ -116,10 +116,10 @@
               {{
                 sftp_files_with_dates | default([]) + [{
                   'file': item,
-                  'date': (item | replace(inventory_hostname + '__config__', '') | replace('.xml', '') | to_datetime('%Y.%m.%d'))
+                  'date': (item | replace(firewall_host + '__config__', '') | replace('.xml', '') | to_datetime('%Y.%m.%d'))
                 }]
               }}
-          loop: "{{ sftp_files.stdout_lines | map('split', ' ') | map('last') | select('match', '^' + inventory_hostname + '__config__') }}"
+          loop: "{{ sftp_files.stdout_lines | map('split', ' ') | map('last') | select('match', '^' + firewall_host + '__config__') }}"
 
         - name: "Find Files Older than {{ backup_retention_in_days }} Days"
           set_fact:
