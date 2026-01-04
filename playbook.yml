@@ -127,7 +127,7 @@
               {{
                 sftp_files_with_dates
                 | selectattr('date', 'defined')
-                | selectattr('date', 'lt', cutoff_date)
+                | selectattr('date', 'le', cutoff_date)
                 | list
               }}
 
